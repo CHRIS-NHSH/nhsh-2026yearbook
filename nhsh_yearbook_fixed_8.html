@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-TW" class="h-full" style="scroll-behavior:smooth;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NHSH 114 畢冊封面評選</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fredoka:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink: #FF8E9E;
+      --blue: #4FC3F7;
+      --yellow: #FFF176;
+      --darker-pink: #E8647D;
+    }
+    body { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-decorative { font-family: 'Fredoka', sans-serif; font-weight: 800; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+
+    .tape-border {
+      position: relative;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    .tape-border::before, .tape-border::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.9);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tape-border::before {
+      width: 60px; height: 30px;
+      top: -15px; left: 20%;
+      transform: rotate(-8deg);
+    }
+    .tape-border::after {
+      width: 60px; height: 30px;
+      bottom: -15px; right: 25%;
+      transform: rotate(6deg);
+    }
+
+    .score-badge {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, var(--blue), #2196F3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; color: white; font-size: 14px;
+      flex-shrink: 0; text-align: center; line-height: 1.2;
+    }
+    .vote-badge {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, var(--pink), #E8647D);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; color: white; font-size: 14px;
+      flex-shrink: 0; text-align: center; line-height: 1.2;
+    }
+    .gallery-card {
+      transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      cursor: pointer;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .gallery-card:hover { transform: translateY(-8px); box-shadow: 0 12px 32px rgba(0,0,0,0.15); }
+    .gallery-card.rank-1 { box-shadow: 0 4px 24px rgba(255,142,158,0.4); }
+    .gallery-card.rank-2 { box-shadow: 0 4px 20px rgba(79,195,247,0.3); }
+    .gallery-card.rank-3 { box-shadow: 0 4px 20px rgba(255,241,118,0.4); }
+
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-content {
+      background: white; border-radius: 24px;
+      max-width: 760px; width: 100%;
+      max-height: 92vh; overflow-y: auto;
+      animation: fadeInUp 0.4s ease-out;
+    }
+    .judge-score-card {
+      background: linear-gradient(135deg, rgba(255,142,158,0.07), rgba(79,195,247,0.07));
+      border-left: 4px solid var(--pink);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    /* Debug panel */
+    #debug-panel {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 200;
+      background: rgba(0,0,0,0.85); color: #4FC3F7;
+      font-family: monospace; font-size: 11px;
+      padding: 0.75rem 1rem; border-radius: 8px;
+      max-width: 360px; max-height: 200px; overflow-y: auto;
+      display: none;
+    }
+    #debug-toggle {
+      position: fixed; bottom: 1rem; right: 1rem; z-index: 201;
+      background: #333; color: white; border: none;
+      padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 11px; cursor: pointer;
+    }
+
+    .img-placeholder {
+      width: 100%; aspect-ratio: 1;
+      background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+      display: flex; align-items: center; justify-content: center;
+      color: #999; font-size: 13px; border-radius: 12px;
+    }
+  </style>
+</head>
+<body class="h-full w-full bg-gradient-to-br from-blue-50 via-white to-pink-50">
+
+
+
+<div id="app" class="w-full overflow-auto">
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="font-decorative text-2xl" style="color:var(--pink);">內中 36th 畢冊</div>
+      <div class="flex gap-6 text-sm font-medium">
+        <a href="#gallery" class="hover:text-pink-500 transition-colors">作品展示</a>
+        <a href="#announcement" class="hover:text-blue-500 transition-colors">評選辦法</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-100 via-transparent to-pink-100 opacity-50"></div>
+    <div class="absolute top-10 left-10 w-40 h-40 bg-blue-200 rounded-full blur-3xl opacity-40 animate-float"></div>
+    <div class="absolute bottom-20 right-10 w-56 h-56 bg-pink-200 rounded-full blur-3xl opacity-30 animate-float" style="animation-delay:-3s;"></div>
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+      <div class="inline-block mb-6 animate-fade-in-up" style="animation-delay:0.1s;">
+        <span style="background-color:var(--yellow);color:#333;" class="px-6 py-2 rounded-full text-sm font-bold">🏆 114 學年度</span>
+      </div>
+      <h1 class="font-decorative text-6xl md:text-8xl mb-6 animate-fade-in-up" style="animation-delay:0.2s;color:var(--pink);">青春 36th<br>畢冊封面徵選</h1>
+      <p class="text-xl md:text-2xl text-gray-700 mb-8 animate-fade-in-up" style="animation-delay:0.3s;">
+        11 種盛夏的寫法<br>
+        <span class="text-gray-500">用設計留住最瘋狂的青春時刻</span>
+      </p>
+      <div class="flex justify-center gap-8 mt-12 animate-fade-in-up" style="animation-delay:0.4s;">
+        <div class="text-center">
+          <div id="stat-count" class="text-4xl font-bold" style="color:var(--pink);">11</div>
+          <div class="text-gray-600 mt-2">份參賽作品</div>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl font-bold" style="color:var(--blue);">3</div>
+          <div class="text-gray-600 mt-2">位專業評審</div>
+        </div>
+        <div class="text-center">
+          <div id="stat-votes" class="text-4xl font-bold" style="color:var(--yellow);text-shadow:0 2px 4px rgba(0,0,0,0.1);">269</div>
+          <div class="text-gray-600 mt-2">人參與票選</div>
+        </div>
+      </div>
+      <div class="mt-10 animate-fade-in-up" style="animation-delay:0.5s;">
+        <a href="#gallery" class="inline-block px-8 py-4 rounded-full font-bold text-white text-lg" style="background:linear-gradient(135deg,var(--pink),var(--blue));">查看所有作品 ↓</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="py-24 bg-gradient-to-br from-yellow-50 via-white to-pink-50" style="scroll-margin-top:64px;">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="font-decorative text-5xl mb-4" style="color:var(--pink);">11 份青春紀實</h2>
+        <p class="text-gray-600 text-lg">感謝所有參賽者用創意詮釋我們的青春</p>
+        <p class="text-gray-400 mt-2">點擊任何作品，探索設計理念與評審評語</p>
+      </div>
+
+      <!-- Sort controls -->
+      <div class="flex justify-center gap-3 mb-10">
+        <button onclick="sortGallery('rank')" id="sort-rank" class="sort-btn px-5 py-2 rounded-full text-sm font-bold border-2 transition-all" style="border-color:var(--pink);color:var(--pink);">獲選作品</button>
+        <button onclick="sortGallery('score')" id="sort-score" class="sort-btn px-5 py-2 rounded-full text-sm font-bold border-2 transition-all border-gray-200 text-gray-500">依評審分</button>
+        <button onclick="sortGallery('votes')" id="sort-votes" class="sort-btn px-5 py-2 rounded-full text-sm font-bold border-2 transition-all border-gray-200 text-gray-500">依得票數</button>
+      </div>
+
+      <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+      <div id="loading" class="hidden text-center py-16">
+        <div class="inline-block w-12 h-12 rounded-full border-4 border-gray-200 border-t-pink-500 animate-spin"></div>
+        <p class="mt-4 text-gray-500">請在上方設定列貼上 Google 試算表連結並點選「載入資料」</p>
+      </div>
+      <div id="empty-state" class="hidden text-center py-16 text-gray-400">
+        <div class="text-5xl mb-4">📋</div>
+        <p class="text-lg">尚無作品資料，請確認試算表連結或欄位名稱。</p>
+        <button onclick="toggleDebug()" class="mt-4 text-sm underline">查看除錯資訊</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Announcement -->
+  <section id="announcement" class="py-24 bg-white" style="scroll-margin-top:64px;">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="font-decorative text-5xl mb-4" style="color:var(--blue);">評選辦法</h2>
+        <p class="text-gray-600">114 學年度畢業紀念冊封面徵稿比賽</p>
+      </div>
+      <div class="space-y-8">
+        <div class="border-l-4 pl-6" style="border-color:var(--pink);">
+          <h3 class="text-2xl font-bold text-gray-800 mb-4">📝 徵稿資訊</h3>
+          <ul class="space-y-2 text-gray-700">
+            <li><strong>主旨：</strong>激發學生創意，展現風城學子自由開放的特色</li>
+            <li><strong>承辦單位：</strong>學務處訓育組</li>
+            <li><strong>徵稿時間：</strong>即日起至 115 年 2 月 24 日（星期二）16:00 止</li>
+            <li><strong>票選期間：</strong>115 年 2 月 25 日至 3 月 2 日（星期一）16:00 止</li>
+          </ul>
+        </div>
+        <div class="border-l-4 pl-6" style="border-color:var(--blue);">
+          <h3 class="text-2xl font-bold text-gray-800 mb-4">⭐ 評選方式</h3>
+          <p class="text-gray-700 mb-3">採專業評審及同學投票，評選出最具內中特色的優良作品。</p>
+          <ul class="space-y-2 text-gray-700 ml-4 mb-5">
+            <li>✓ <strong>專業評審（60%）：</strong>主題契合度與創意、視覺美感與設計完整度、創作理念表達</li>
+            <li>✓ <strong>同學投票（40%）：</strong>全體畢業生線上投票，依得票率換算</li>
+          </ul>
+          <div class="rounded-xl p-4" style="background:rgba(79,195,247,0.08);border:1px solid rgba(79,195,247,0.3);">
+            <p class="text-sm font-bold text-gray-700 mb-3">📐 得票率加權換算說明</p>
+            <div class="space-y-2 text-sm text-gray-600 font-mono">
+              <p>得票率 = 該作品得票數 ÷ 總投票人數 × 100%</p>
+              <p>得票率加權（40分滿分）= 得票率 ÷ 最高得票率 × 40</p>
+            </div>
+            <div class="mt-3 pt-3 border-t border-blue-100 text-sm text-gray-500">
+              <p class="mb-1">舉例：共 <strong>269</strong> 票，得票最高者為 <strong>60 票</strong>（得票率 22.3%）</p>
+              <p class="mb-1">得票 60 票 → 60÷269×100% = 22.3% → 22.3%÷22.3% × 40 = <strong>40.0 分</strong></p>
+              <p>最終總分 = 評審平均 × 60% + 得票率加權</p>
+            </div>
+          </div>
+        </div>
+        <div class="border-l-4 pl-6" style="border-color:var(--yellow);">
+          <h3 class="text-2xl font-bold text-gray-800 mb-4">🏆 獎勵方式</h3>
+          <ul class="space-y-2 text-gray-700">
+            <li>✓ 每位參賽者記嘉獎一支</li>
+            <li><strong>優勝 1 名：</strong>新臺幣 3,500 元</li>
+            <li><strong>佳作 1 名：</strong>新臺幣 1,500 元</li>
+          </ul>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-6 border-l-4" style="border-color:var(--pink);">
+          <p class="text-sm text-gray-600"><strong>聲明：</strong>學校保有對投稿內容進行初步審查之權利。若作品內容明顯違反相關法令或內容限制，學校有權逕行拒絕該作品參與後續評選及投票。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <p class="text-gray-300 mb-4">© 114 學年度 臺北市立內湖高級中學 畢業紀念冊</p>
+      <p class="text-gray-500 text-sm">感謝所有參賽者用創意詮釋我們的青春</p>
+    </div>
+  </footer>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="modal-backdrop hidden" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="p-6 md:p-8">
+        <button onclick="closeModal()" style="float:right;font-size:1.5rem;color:#999;border:none;background:none;cursor:pointer;line-height:1;">×</button>
+        <div id="modal-rank" class="inline-block px-4 py-1.5 rounded-full text-white text-sm font-bold mb-5" style="background:linear-gradient(135deg,var(--blue),var(--pink));">第 1 名</div>
+        <div class="clear-both">
+          <div class="mb-6 rounded-xl overflow-hidden">
+            <img id="modal-image" src="" alt="作品" class="w-full max-h-80 object-contain bg-gray-50" onerror="this.style.display='none';document.getElementById('modal-img-fallback').style.display='flex'">
+            <div id="modal-img-fallback" class="img-placeholder" style="display:none;height:200px;">圖片載入失敗</div>
+          </div>
+          <h1 id="modal-entry-num" class="text-3xl font-bold text-gray-800 mb-6">作品 #1</h1>
+
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-3">✨ 創作理念</h2>
+            <p id="modal-concept" class="text-gray-700 leading-relaxed whitespace-pre-wrap"></p>
+          </div>
+
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-3">📊 評審評分與評語</h2>
+            <div id="judges-container" class="space-y-3"></div>
+          </div>
+
+          <div class="mb-6 p-5 rounded-xl" style="background:linear-gradient(135deg,rgba(79,195,247,0.1),rgba(255,142,158,0.1));">
+            <h3 class="font-bold text-gray-800 mb-4">📈 分數計算</h3>
+            <div class="grid grid-cols-4 gap-3 text-center">
+              <div>
+                <div id="modal-votes" class="text-2xl font-bold" style="color:var(--blue);">0</div>
+                <p class="text-gray-600 text-sm">得票數</p>
+              </div>
+              <div>
+                <div id="modal-vote-rate" class="text-2xl font-bold" style="color:var(--pink);">0</div>
+                <p class="text-gray-600 text-sm">評審平均分</p>
+              </div>
+              <div>
+                <div id="modal-vote-weight" class="text-2xl font-bold" style="color:#888;">0</div>
+                <p class="text-gray-600 text-sm">得票率加權</p>
+              </div>
+              <div>
+                <div id="modal-final-score-2" class="text-2xl font-bold" style="color:#7c3aed;">0</div>
+                <p class="text-gray-600 text-sm">總分</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Debug Panel -->
+<div id="debug-panel"></div>
+
+<script>
+// ============================================================
+// UTILITIES
+// ============================================================
+
+let debugLog = [];
+function log(...args) {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+  debugLog.push(msg);
+  console.log(...args);
+  const panel = document.getElementById('debug-panel');
+  if (panel) panel.innerHTML = debugLog.slice(-20).map(l => `<div>${l}</div>`).join('');
+}
+
+function toggleDebug() {
+  const panel = document.getElementById('debug-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function setStatus(msg, color) {
+  console.log('[Status]', msg);
+}
+
+// ============================================================
+// GOOGLE DRIVE IMAGE URL CONVERTER
+// Handles multiple Google Drive link formats and converts to embeddable URL
+// ============================================================
+function convertGoogleDriveUrl(url) {
+  if (!url || url.trim() === '') return '';
+  url = url.trim();
+
+  // Already a direct image URL (not drive)
+  if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) {
+    return url;
+  }
+
+  // Extract file ID from various Google Drive URL formats:
+  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  // https://drive.google.com/open?id=FILE_ID
+  // https://drive.google.com/uc?id=FILE_ID
+  // https://drive.google.com/thumbnail?id=FILE_ID
+  let fileId = null;
+
+  const patterns = [
+    /\/file\/d\/([a-zA-Z0-9_-]+)/,        // /file/d/ID
+    /[?&]id=([a-zA-Z0-9_-]+)/,             // ?id=ID or &id=ID
+    /\/d\/([a-zA-Z0-9_-]+)/,               // /d/ID (spreadsheets etc)
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) { fileId = match[1]; break; }
+  }
+
+  if (!fileId) {
+    log('⚠️ 無法解析 Google Drive 連結:', url);
+    return url;
+  }
+
+  // Use thumbnail endpoint — works without login for shared files, higher compatibility
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+}
+
+// ============================================================
+// CSV PARSER (robust — handles commas inside quoted fields)
+// ============================================================
+function parseCSV(text) {
+  // Normalize line endings
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  function parseLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i+1] === '"') { current += '"'; i++; }
+        else { inQuotes = !inQuotes; }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }
+
+  const headers = parseLine(lines[0]).map(h => h.replace(/\n/g, ' ').trim());
+  log('📋 欄位名稱:', headers);
+
+  const data = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const values = parseLine(lines[i]);
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = values[idx] !== undefined ? values[idx] : '';
+    });
+    data.push(row);
+  }
+  return data;
+}
+
+// ============================================================
+// FLEXIBLE FIELD RESOLVER
+// Tries multiple possible column name variants
+// ============================================================
+function resolveField(row, candidates) {
+  for (const key of candidates) {
+    // Exact match
+    if (row[key] !== undefined && row[key] !== '') return row[key];
+    // Partial match (case insensitive)
+    const found = Object.keys(row).find(k =>
+      k.toLowerCase().replace(/\s+/g,'').includes(key.toLowerCase().replace(/\s+/g,''))
+    );
+    if (found && row[found] !== '') return row[found];
+  }
+  return '';
+}
+
+function getNum(row, candidates) {
+  const v = resolveField(row, candidates);
+  return parseFloat(v) || 0;
+}
+
+// ============================================================
+// DATA STATE
+// ============================================================
+let artworks = [];
+let sortMode = 'rank';
+
+// ============================================================
+// HARDCODED DATA (直接從試算表內嵌，不需要網路請求)
+// ============================================================
+const HARDCODED_DATA = [
+  {
+    編號: '01', 創作者: '302 洪彩緁\n312 凌語呈',
+    創作理念: '封面少女的頭髮隨風城的風肆意飄揚，雙眸盛滿對未來的悸動遠眺，和畢業生們同樣期盼未來；向日葵迎著陽光盛放，寓意希望、熱情和祝福 。封底的臺灣藍鵲展翅象徵青春的勇氣與守護，挾帶眾人的成長故事飛向未來。',
+    評審A: '93', 評審B: '83', 評審C: '88',
+    評語A: '封面主從關係清楚、視覺效果清晰、四個元素(女孩/向日葵/內湖高中/36)主從關係清楚。',
+    評語B: '',
+    評語C: '【優點】 實體水彩筆觸細膩，展現了極高的手繪誠意。\n【建議】 封面的日間溫暖與封底的黑夜靜謐形成強烈對比，若能增加過渡元素（如光點或花瓣的延伸），整體感會更強。',
+    評審平均: '88.0', 得票數: '28', 得票率加權: '18.7', 總分: '71.5', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1YDbuKtmK9MDD3OlL5_AhJnLfgbYiuVgX'
+  },
+  {
+    編號: '02', 創作者: '315 黃宥熏',
+    創作理念: '用新藝術風格結合內中特色，環繞的圖像收納著三年的點滴，背景的暖棕色融合制服配色具象徵回憶與祝福。',
+    評審A: '96', 評審B: '92', 評審C: '94',
+    評語A: '呈現出新藝術時代雅致氛圍，放大圖可以看到水球/藍鵲/家莒校長/郭氏古宅/旋轉樓梯/獼猴等內中特色',
+    評語B: '',
+    評語C: '【優點】 慕夏風格執行得極為優異，成功掌握了慕夏風格的邊框與裝飾線條，將校園小景嵌入圓框的設計極具巧思。\n【建議】 線條非常繁瑣，印刷時需注意小縮圖的細節是否會糊掉；建議在主要標題字體增加微幅的深色陰影，以提升文字的可讀性。',
+    評審平均: '94.0', 得票數: '28', 得票率加權: '18.7', 總分: '75.1', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1ah65GtvOFz78NlJTF2dmGzLONqVNuQdr'
+  },
+  {
+    編號: '03', 創作者: '110 李芸熙',
+    創作理念: '以青春、自由為主題，結合校園日常、場景、合照，呈現三年的陪伴與回憶。',
+    評審A: '96', 評審B: '96', 評審C: '92',
+    評語A: '內中建築曲線透視畫得很好、細節豐富，封底設計活潑、洋溢青春氣息。若當選封面建議調整放文字的空間，以免文字被背景吃掉。',
+    評語B: '俯瞰視角表現得很棒，內中校舍獨特的旋轉樓梯呈現其中，畫面中的每個元素都處理得很好。建議要加上標題字樣。',
+    評語C: '【優點】 數位繪圖的透視感抓得很棒，B棟旋轉樓梯與天台的空間感十足。封底採用拍立得與紙條拼貼風格，營造出濃厚的學生生活感，設計非常完整。\n【建議】 拼貼物件的重疊層次可再微調，讓不同素材（如紙條與拍立得）之間的視覺邊界更清晰，強化手作的立體感。',
+    評審平均: '94.7', 得票數: '20', 得票率加權: '13.3', 總分: '70.1', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1YOmS8Zl77RKgYCGLW9b2BuYj0YSiHzWI'
+  },
+  {
+    編號: '04', 創作者: '310 蘇芓瑀',
+    創作理念: '以春季的校園風景，捕捉離別前的溫柔瞬間，讓回憶停留在最明亮的時刻。',
+    評審A: '86', 評審B: '80', 評審C: '81',
+    評語A: '學生制服和樹林有內中特色，有種在學校野餐的感覺。',
+    評語B: '',
+    評語C: '【優點】 色調柔和且清新，營造出安靜、溫潤的畢業氛圍。\n【建議】 以「畢業紀念冊」的視覺張力來說略顯單薄，畫面目前較具通用性，建議在背景或細節處融入內中專屬的視覺元素（如校徽或特有的校景圖騰），增加作品的識別度。',
+    評審平均: '82.3', 得票數: '10', 得票率加權: '6.7', 總分: '56.1', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1VMg7IidoohH-oLXM3ZwqI_o2an9zUyRI'
+  },
+  {
+    編號: '05', 創作者: '316 黃悅庭',
+    創作理念: '圖中背景為校園真實場景，視角是平常上學時前往教室的視角，而圖中的人們就像是平時放學般正在散場。',
+    評審A: '93', 評審B: '83', 評審C: '90',
+    評語A: '內中川堂望過去的景色畫得非常傳神，人物設定造型可愛有童趣',
+    評語B: '',
+    評語C: '【優點】 扁平化插畫風格鮮明，封底的照片飛散設計具備極佳的敘事性。\n【建議】 可進一步強化照片飛散的路徑感，利用照片的角度旋轉與留白區塊的對比，引導觀者的視覺動線，增加畫面的空氣感。',
+    評審平均: '88.7', 得票數: '32', 得票率加權: '21.3', 總分: '74.5', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=182AeEKDa8YMOOIJumv-3-PehWhL40ID3'
+  },
+  {
+    編號: '06', 創作者: '315 張玟語',
+    創作理念: '從內中可見的動物結合海洋生物表達對同學的祝福，藉由被風吹起的相片代表回憶，希望在學校中的經歷會陪伴直至未來。',
+    評審A: '90', 評審B: '75', 評審C: '83',
+    評語A: '雲的立體感畫得很好，跨頁有氣勢，天空給人自由的想像',
+    評語B: '',
+    評語C: '【優點】 核心符號（笑容雲朵）具備強烈的生命力與積極感。\n【建議】 雖然創意有趣，畫面上的散件元素（如畢業帽與藍鵲）目前配置較為隨興，建議微調視覺重心的配置，讓主視覺雲朵與周邊配件的結構更穩固。',
+    評審平均: '82.7', 得票數: '5', 得票率加權: '3.3', 總分: '52.9', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=136rdzPS47ypYxpO8XRK0c7oXWIKnTMEO'
+  },
+  {
+    編號: '07', 創作者: '313 鍾易珊',
+    創作理念: '希望展現本校學生青春陽光的一面，以美麗的夕陽為意境，意味著將高中生活畫下一個完美的句點。',
+    評審A: '88', 評審B: '81', 評審C: '87',
+    評語A: '夕陽餘暉中的內中學生奔跑追逐，熱情活潑。前景學生頭髮有藍鵲尾羽的設計',
+    評語B: '',
+    評語C: '【優點】 動漫風格的光影處理具備高度完整性，夕陽餘暉的色彩暈染非常有渲染力。\n【建議】 海灘場景與內中的關聯性可再加強，建議在角色制服或周邊配件中補足校園身分標記，強化這段畢業記憶的專屬感。',
+    評審平均: '85.3', 得票數: '4', 得票率加權: '2.7', 總分: '53.9', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1uOMOYYXUwlFY3qeSBxxCUlcZV1_KGC_p'
+  },
+  {
+    編號: '08', 創作者: '302 李如仙',
+    創作理念: '以「青春留存」為核心，將雜誌設計融入畢冊，象徵我們都是自己人生的主角。封面寫實人物代表成長與蛻變，封底Q版與臺灣藍鵲增添活潑與校園意象，呈現自由、回憶與屬於內中的青春篇章。',
+    評審A: '96', 評審B: '97', 評審C: '89',
+    評語A: '制服的陰影明暗和整體層次畫得很漂亮，版面設計有時尚感，封底的對話框內容很可愛',
+    評語B: '作品完整度高，封面男女主角成功撐起畢冊的門面，充滿青春回憶的作品',
+    評語C: '【優點】 作品完整度極高，展現了極大的排版資訊量與執行力。\n【建議】 封面寫實日系與封底Q版角色的風格差異較大，建議透過統一色彩基調或標題排版語法，消弭風格轉換間的突兀感，提升視覺一致性。',
+    評審平均: '94.0', 得票數: '23', 得票率加權: '15.3', 總分: '71.7', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1C3189fIOsnKQnRlLtaITbKbM9owR4y5c'
+  },
+  {
+    編號: '09', 創作者: '309 陳威佑',
+    創作理念: '畢業不是結果，而是走向下一片森林。畫中的小鹿佇立在光之路前，鹿角綻放光芒，象徵成長與勇氣，而樹枝上的亮點化作為每個人的祝福，指引大家走向未知與未來。',
+    評審A: '86', 評審B: '80', 評審C: '85',
+    評語A: '色彩繽紛的水彩作品，符合作者提出的創作理念。若當選需要調整封面放文字的空間，以免文字被鮮豔的背景吃掉。',
+    評語B: '',
+    評語C: '【優點】 藝術意境深遠且色彩運用夢幻，光影表現具備高度的美感，小鹿與光路的隱喻非常高級，脫離了常見的具象校園設計。\n【建議】 封面的設計功能性可再補強，建議在不破壞畫面的原則下，將校名與屆數等必要資訊融入構圖，讓作品從純畫作轉化為正式的產品設計。',
+    評審平均: '83.7', 得票數: '6', 得票率加權: '4.0', 總分: '54.2', 名次: '',
+    圖片: 'https://drive.google.com/uc?export=view&id=1npnEEqyNteVoaaxndifG7B3b2MWG7z2r'
+  },
+  {
+    編號: '10', 創作者: '302 袁子涵',
+    創作理念: '我心中的內中學子如風一般自由，因而以此為核心，在封面繪製了大家在空中躍起、帶著燦爛笑容的那一刻，而封底則是描繪了那些看似平凡卻閃光的瞬間，捕捉下我們在內中的部分青春回憶。',
+    評審A: '96', 評審B: '95', 評審C: '96',
+    評語A: '人體結構很厲害，每一個角色都畫得很可愛，呈現出形形色色內中學生活潑樣態。',
+    評語B: '封面圖像充分表現了內中學子的青春氣息，充滿了律動感，整體編排完整度高，用色也很舒服',
+    評語C: '【優點】 視覺清爽度第一名。利用斜對角構圖展現學生的躍動感，畫面充滿空氣感。封底的九宮格校景與主體呼應良好，設計語言非常統一，是完成度非常高的成熟作品。\n【建議】 藍天部分的層次感若能再微幅增加（如加入隱約的雲層變化或光暈），能讓整體的透視深度更有張力。',
+    評審平均: '95.7', 得票數: '53', 得票率加權: '35.3', 總分: '92.7', 名次: '第１名',
+    圖片: 'https://drive.google.com/uc?export=view&id=1y8xSdfPrWv3EaHpbv_SvcZFGmYND1jWz'
+  },
+  {
+    編號: '11', 創作者: '305 蔡季恩',
+    創作理念: '內湖高中從前就有水球大戰的傳統，雖然不確定這屆還有沒有，但希望以此拿著水球的少女來展現內中的青春！',
+    評審A: '86', 評審B: '85', 評審C: '80',
+    評語A: '封面顏色搭配得很亮眼，版面設計主題明確，希望能看到完成版。',
+    評語B: '',
+    評語C: '【優點】 情感穿透力強，勇於觸碰斷代傳統。封面動態編排與文案充滿渲染力。\n【建議】 封底目前處於未完工的草稿狀態，明顯影響作品的完整度，在評分上略為可惜。若能將「畫不出來」的留白轉化為對斷代傳統的感性對話，例如補上「致 傳說中的夏天」，這張作品就能昇華成一件關於遺憾與傳說的概念藝術，讓所有人理解這份留白是來自未曾親歷那個夏天的遺憾。',
+    評審平均: '83.7', 得票數: '60', 得票率加權: '40.0', 總分: '90.2', 名次: '佳作',
+    圖片: 'https://drive.google.com/uc?export=view&id=1GxaMav-JpUQVzQNVyiDXWxTUyLS-aT6E'
+  }
+];
+
+function getThumb(url) {
+  if (!url) return '';
+  const m = url.match(/[?&]id=([^&]+)/);
+  if (m) return `https://lh3.googleusercontent.com/d/${m[1]}`;
+  return url;
+}
+// ============================================================
+function sortGallery(mode) {
+  sortMode = mode;
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.style.borderColor = '#e5e7eb';
+    btn.style.color = '#6b7280';
+    btn.style.background = 'transparent';
+  });
+  const active = document.getElementById('sort-' + mode);
+  if (active) {
+    active.style.borderColor = 'var(--pink)';
+    active.style.color = 'white';
+    active.style.background = 'var(--pink)';
+  }
+  let pool = mode === 'rank' ? artworks.filter(a => a.名次) : [...artworks];
+  const sorted = pool.sort((a, b) => {
+    if (mode === 'votes') return parseFloat(b.得票數||0) - parseFloat(a.得票數||0);
+    if (mode === 'score') return parseFloat(b.評審平均||0) - parseFloat(a.評審平均||0);
+    // rank: sort by 編號
+    return parseInt(a.編號||0) - parseInt(b.編號||0);
+  });
+  renderGalleryItems(sorted);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderGallery(items) {
+  const loading = document.getElementById('loading');
+  if (loading) loading.style.display = 'none';
+  if (!items || items.length === 0) { showEmpty(); return; }
+  document.getElementById('empty-state').classList.add('hidden');
+  const sorted = [...items].sort((a, b) => parseInt(a.編號||0) - parseInt(b.編號||0));
+  renderGalleryItems(sorted);
+}
+
+function renderGalleryItems(items) {
+  const gallery = document.getElementById('gallery-grid');
+  gallery.innerHTML = items.map((item, idx) => {
+    const ranking = idx + 1;
+    const rankClass = ranking === 1 ? 'rank-1' : ranking === 2 ? 'rank-2' : ranking === 3 ? 'rank-3' : '';
+    const rankBadge = ranking <= 3
+      ? `<div class="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:${ranking===1?'linear-gradient(135deg,#FF8E9E,#ff5a7e)':ranking===2?'linear-gradient(135deg,#4FC3F7,#1976D2)':'linear-gradient(135deg,#FFC107,#FF8F00)'};">${ranking}</div>`
+      : '';
+    return `
+      <div class="gallery-card ${rankClass}" onclick="openModal(${artworks.indexOf(item)})">
+        <div class="relative">
+          <img src="${getThumb(item.圖片)}" alt="作品 ${item.編號}" class="w-full object-contain bg-gray-50" style="height:220px;" loading="lazy"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="img-placeholder" style="display:none;height:220px;">暫無圖片</div>
+          ${rankBadge}
+        </div>
+        <div class="p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div>
+              <h3 class="font-bold text-gray-800">作品 #${item.編號||idx+1}</h3>
+              <p class="text-xs text-gray-500">${item.創作者||'匿名'}</p>
+            </div>
+            <div class="flex gap-2">
+              ${item.評審平均 ? `<div class="score-badge"><span style="font-size:11px;">${item.評審平均}<br><span style="font-size:9px;font-weight:600;opacity:0.85;">評審均</span></span></div>` : ''}
+              ${item.得票數 ? `<div class="vote-badge"><span>${item.得票數}<br><span style="font-size:10px;font-weight:600;opacity:0.85;">票</span></span></div>` : ''}
+            </div>
+          </div>
+          <p class="text-xs text-gray-600 leading-relaxed line-clamp-2">${item.創作理念||'點擊查看詳情'}</p>
+          ${item.名次 ? `<p class="mt-2 text-xs font-bold" style="color:var(--pink);">🏆 ${item.名次}</p>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function showEmpty() {
+  document.getElementById('gallery-grid').innerHTML = '';
+  document.getElementById('empty-state').classList.remove('hidden');
+  document.getElementById('loading').style.display = 'none';
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(idx) {
+  const item = artworks[idx];
+  if (!item) return;
+  const sortedByScore = [...artworks].sort((a,b) => parseFloat(b.總分||0) - parseFloat(a.總分||0));
+  const ranking = sortedByScore.indexOf(item) + 1;
+  const rankLabel = item.名次 || `第 ${ranking} 名`;
+
+  document.getElementById('modal-rank').textContent = rankLabel;
+  document.getElementById('modal-entry-num').textContent = `作品 #${item.編號||idx+1}`;
+  document.getElementById('modal-concept').textContent = item.創作理念 || '暫無資訊';
+  document.getElementById('modal-votes').textContent = item.得票數 || '0';
+  document.getElementById('modal-vote-rate').textContent = item.評審平均 || '—';
+  document.getElementById('modal-vote-weight').textContent = parseFloat(item.得票率加權||0).toFixed(1);
+  document.getElementById('modal-final-score-2').textContent = item.總分 || '—';
+
+  const imgEl = document.getElementById('modal-image');
+  const fallback = document.getElementById('modal-img-fallback');
+  if (item.圖片) {
+    imgEl.style.display='';
+    imgEl.src=getThumb(item.圖片);
+    imgEl.style.cursor='pointer';
+    imgEl.title='點擊查看原始大圖';
+    imgEl.onclick = () => window.open(item.圖片, '_blank');
+    fallback.style.display='none';
+  } else { imgEl.style.display='none'; fallback.style.display='flex'; }
+
+  const judgesHTML = ['A','B','C'].map(j => `
+    <div class="judge-score-card">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">🧑‍⚖️</span>
+        <div class="flex-1">
+          <p class="font-bold text-gray-800 mb-1">評審 ${j}</p>
+          <p class="text-gray-600 text-sm whitespace-pre-line">${item['評語'+j]||'暫無評語'}</p>
+        </div>
+        <div class="score-badge" style="width:46px;height:46px;font-size:15px;">${item['評審'+j]||'—'}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('judges-container').innerHTML = judgesHTML;
+  // comments-container removed (merged into judges-container)
+  document.getElementById('detail-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('detail-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// INIT
+document.getElementById('sort-rank').style.background = 'var(--pink)';
+document.getElementById('sort-rank').style.color = 'white';
+artworks = HARDCODED_DATA;
+// Default view: 獲選作品 only, sorted by 編號
+renderGalleryItems(artworks.filter(a => a.名次).sort((a,b) => parseInt(a.編號||0) - parseInt(b.編號||0)));
+</script>
+</body>
+</html>
