@@ -272,7 +272,8 @@
             <img id="modal-image" src="" alt="作品" class="w-full max-h-80 object-contain bg-gray-50" onerror="this.style.display='none';document.getElementById('modal-img-fallback').style.display='flex'">
             <div id="modal-img-fallback" class="img-placeholder" style="display:none;height:200px;">圖片載入失敗</div>
           </div>
-          <h1 id="modal-entry-num" class="text-3xl font-bold text-gray-800 mb-6">作品 #1</h1>
+          <h1 id="modal-entry-num" class="text-3xl font-bold text-gray-800 mb-1">作品 #1</h1>
+          <p id="modal-creator" class="text-gray-500 text-base mb-6"></p>
 
           <div class="mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-3">✨ 創作理念</h2>
@@ -660,6 +661,7 @@ function openModal(idx) {
 
   document.getElementById('modal-rank').textContent = rankLabel;
   document.getElementById('modal-entry-num').textContent = `作品 #${item.編號||idx+1}`;
+  document.getElementById('modal-creator').textContent = item.創作者 || '';
   document.getElementById('modal-concept').textContent = item.創作理念 || '暫無資訊';
   document.getElementById('modal-votes').textContent = item.得票數 || '0';
   document.getElementById('modal-vote-rate').textContent = item.評審平均 || '—';
